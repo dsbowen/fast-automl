@@ -5,4 +5,4 @@ from .inference import (
     explain_predictions, explain_correlations
 )
 from .treatment import TreatmentRegression
-from .utils import Preprocessor
+from .utils import TransformerMixin, ColumnSelector

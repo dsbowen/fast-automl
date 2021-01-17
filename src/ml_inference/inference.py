@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
 from sklearn.model_selection import cross_val_predict, cross_val_score
 
 from itertools import combinations
@@ -34,54 +33,6 @@ def cross_val_plot(estimators, X, y, cross_val_score=cross_val_score):
     })
     ax = sns.barplot(x='Model', y='Score', data=df)
     return df, ax
-
-def error_plot(estimators, X, y, error, cov_kwargs={'cov_type': 'HC1'}):
-    """
-    Parameters
-    ----------
-    estimators : list of (estimator name, estimator) tuples
-        Estimator is the estimator passed to `cross_val_score`, which usually
-        expects an sklearn-like estimator.
-
-    X : pd.DataFrame or np.array
-
-    y : pd.Series or np.array
-
-    error : callable
-        Takes an estimator and outputs a `y.shape` np.array of errors.
-
-    cov_kwargs : dict, default={'cov_type': 'HC1'}
-        Arguments for computing the covariance when comparing models. See the 
-        <a href="https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLSResults.get_robustcov_results.html">statsmodels API</a>.
-
-    Returns
-    -------
-    error dataframe, comparison dataframe, plot : pd.DataFrame, pd.DataFrame, seaborn plot
-    """
-    def compare(est0, est1):
-        y = est0[1] - est1[1]
-        model = sm.OLS(y, np.ones(len(y)))
-        res = model.fit().get_robustcov_results(**cov_kwargs)
-        return {
-            'Model 0': est0[0],
-            'Model 1': est1[0],
-            'beta': res.params[0],
-            'beta_se': res.bse[0],
-            't-value': res.tvalues[0],
-            'p-value': res.pvalues[0]
-        }
-
-    N = len(X)
-    error_vectors = [(name, error(est)) for name, est in estimators]
-    df = pd.DataFrame({
-        'Model': [i for name, _ in estimators for i in N*[name]],
-        'Error': [err for _, vector in error_vectors for err in list(vector)]
-    })
-    ax = sns.boxplot(x='Model', y='Error', data=df, showfliers=False)
-    comparison_records = [
-        compare(*vectors) for vectors in combinations(error_vectors, r=2)
-    ]
-    return df, pd.DataFrame(comparison_records), ax
 
 def group_features(df, groups, axis=0):
     """

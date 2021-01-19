@@ -181,7 +181,7 @@ def moderation_test(estimator, X, y, repeat=10, cv=10, parallel=True):
     df = df.groupby('Repetition').mean().reset_index(drop=True)
     return df, *run_test()
 
-def gen_score_plot(df):
+def gen_score_plot(df, **boxplot_kwargs):
     """
     Parameters
     ----------
@@ -189,11 +189,14 @@ def gen_score_plot(df):
         Columns represent different models, rows represent the average CV
         score for a given CV repetition. This can be the output of `cv_test`.
 
+    **boxplot_kwargs :
+        Keyword arguments for `sns.boxplot`.
+
     Returns
     -------
     result_plot : seaborn plot
     """
     df = pd.melt(df, var_name='Model', value_name='Score')
-    ax = sns.boxplot(x='Model', y='Score', data=df)
+    ax = sns.boxplot(x='Model', y='Score', data=df, **boxplot_kwargs)
     ax.set(ylabel='Cross validation score')
     return ax

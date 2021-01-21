@@ -153,7 +153,9 @@ class _AutoEstimator(BaseEstimator):
             ).fit(X, y, sample_weight=sample_weight)
             print('Best ensemble score: {:.4f}'.format(ensemble.best_score_))
             return 'ensemble {}'.format(i+1), ensemble.best_estimator_
-                
+
+        # store a copy of X to fit the best_estimator_
+        X_copy = X.copy()
         for preprocessor in self.preprocessors:
             X = preprocessor.fit_transform(X)
         scoring = check_scoring(self.scoring, classifier=is_classifier(self))
@@ -172,7 +174,7 @@ class _AutoEstimator(BaseEstimator):
             meta_ensemble = VotingRegressor(ensembles)
         self.best_estimator_ = make_pipeline(
             *self.preprocessors, meta_ensemble
-        )
+        ).fit(X_copy, y)
         return self
     
     def predict(self, X):

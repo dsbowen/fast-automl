@@ -1,15 +1,21 @@
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from .metrics import check_scoring
+
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, is_classifier
 from sklearn.decomposition import PCA
-from sklearn.ensemble import AdaBoostRegressor, RandomForestRegressor
+from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor, RandomForestClassifier, RandomForestRegressor
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LassoLars, Ridge, ElasticNet
+from sklearn.linear_model import ElasticNet, LassoLars, LogisticRegression, Ridge
+from sklearn.metrics import make_scorer, r2_score
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.svm import SVR
+from sklearn.svm import SVC, SVR
 from scipy.stats import expon, geom, uniform, poisson, randint
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier, XGBRegressor
+
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 
 class _CVBaseEstimator(BaseEstimator):
@@ -37,12 +43,15 @@ class _CVBaseEstimator(BaseEstimator):
     def make_estimator(self, **params):
         raise NotImplementedError('make_estimator method not implemented')
 
-    def fit(self, X, y, n_iter=10, n_jobs=None):
+    @ignore_warnings(category=ConvergenceWarning)
+    def fit(self, X, y, n_iter=10, n_jobs=None, scoring=None):
+        scoring = check_scoring(scoring, classifier=is_classifier(self))
         est = RandomizedSearchCV(
             self.make_estimator(),
             self.get_param_distributions(X, y),
             n_iter=n_iter,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            scoring=scoring
         ).fit(X, y)
         self.cv_results_ = list(zip(
             est.cv_results_['mean_test_score'], est.cv_results_['params']
@@ -57,15 +66,50 @@ class _CVBaseEstimator(BaseEstimator):
         )
         return self.best_estimator_.predict(X)
 
+    def predict_proba(self, X):
+        assert hasattr(self, 'best_estimator_'), (
+            'Estimator has not been fitted. Call `fit` before `predict`'
+        )
+        return self.best_estimator_.predict_proba(X)
+
+
+class RandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):    
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            RandomForestClassifier()
+        ).set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'randomforestclassifier__n_estimators': geom(1./100)
+        })
+
+
+class PCARandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):    
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            RandomForestClassifier()
+        ).set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'randomforestclassifier__n_estimators': geom(1./100)
+        })
 
 
 class RandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):    
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             RandomForestRegressor()
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -75,14 +119,13 @@ class RandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):
 
 class PCARandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):    
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             PolynomialFeatures(),
             StandardScaler(),
             PCA(),
             RandomForestRegressor()
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -92,13 +135,49 @@ class PCARandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
+class LogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['l1'],
+            'logisticregression__solver': ['liblinear']
+        })
+
+
+class PCALogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['l1'],
+            'logisticregression__solver': ['liblinear']
+        })
+
+
 class LassoLarsCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             LassoLars(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -108,14 +187,13 @@ class LassoLarsCV(RegressorMixin, _CVBaseEstimator):
     
 class PCALassoLarsCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             PolynomialFeatures(),
             StandardScaler(),
             PCA(),
             LassoLars(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -125,13 +203,47 @@ class PCALassoLarsCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
+class LogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['l2']
+        })
+
+
+class PCALogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['l2']
+        })
+
+
 class RidgeCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             Ridge(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -141,14 +253,13 @@ class RidgeCV(RegressorMixin, _CVBaseEstimator):
     
 class PCARidgeCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             PolynomialFeatures(),
             StandardScaler(),
             PCA(),
             Ridge(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -158,13 +269,51 @@ class PCARidgeCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
+class LogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['elasticnet'],
+            'logisticregression__l1_ratio': uniform(0, 1),
+            'logisticregression__solver': ['saga']
+        })
+
+
+class PCALogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            StandardScaler(),
+            LogisticRegression()
+        ).set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'logisticregression__C': expon(0, 1),
+            'logisticregression__penalty': ['elasticnet'],
+            'logisticregression__l1_ratio': uniform(0, 1),
+            'logisticregression__solver': ['saga']
+        })
+
+
 class ElasticNetCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             ElasticNet(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
     
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -175,14 +324,13 @@ class ElasticNetCV(RegressorMixin, _CVBaseEstimator):
     
 class PCAElasticNetCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
-        est = make_pipeline(
+        return make_pipeline(
             *self.preprocessors,
             PolynomialFeatures(),
             StandardScaler(),
             PCA(),
             ElasticNet(normalize=True)
-        )
-        return est.set_params(**params)
+        ).set_params(**params)
     
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
@@ -232,6 +380,44 @@ class PCAKernelRidgeCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
+class SVCCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        return make_pipeline(
+            *self.preprocessors,
+            StandardScaler(),
+            SVC(probability=True)
+        ).set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'svc__C': expon(0, 1),
+            'svc__degree': geom(.3),
+            'svc__kernel': ['linear', 'poly', 'rbf'],
+        })
+    
+    
+class PCASVCCV(RegressorMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            StandardScaler(),
+            SVC(probability=True)
+        )
+        return est.set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'svc__C': expon(0, 1),
+            'svc__degree': geom(.3),
+            'svc__kernel': ['linear', 'poly', 'rbf'],
+        })
+
+
 class SVRCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
@@ -271,6 +457,43 @@ class PCASVRCV(RegressorMixin, _CVBaseEstimator):
         })
 
     
+class KNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            StandardScaler(),
+            KNeighborsClassifier()
+        )
+        return est.set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'kneighborsclassifier__n_neighbors': geom(1/(.05*X.shape[0])),
+            'kneighborsclassifier__weights': ['uniform', 'distance']
+        })
+
+
+class PCAKNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            StandardScaler(),
+            KNeighborsClassifier()
+        )
+        return est.set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'kneighborsclassifier__n_neighbors': geom(1/(.05*X.shape[0])),
+            'kneighborsclassifier__weights': ['uniform', 'distance']
+        })
+
+
 class KNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
@@ -308,6 +531,39 @@ class PCAKNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
     
 
+class AdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            AdaBoostClassifier()
+        )
+        return est.set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'adaboostclassifier__n_estimators': geom(1./2**5)
+        })
+
+
+class PCAAdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            AdaBoostClassifier()
+        )
+        return est.set_params(**params)
+        
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'adaboostclassifier__n_estimators': geom(1./2**5)
+        })
+
+
 class AdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
@@ -338,6 +594,49 @@ class PCAAdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
             'polynomialfeatures__degree': [1, 2],
             'pca__n_components': list(range(1, X.shape[1])),
             'adaboostregressor__n_estimators': geom(1./2**5)
+        })
+
+
+class XGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            XGBClassifier()
+        )
+        return est.set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'xgbclassifier__gamma': expon(0, 1),
+            'xgbclassifier__max_depth': geom(1./6),
+            'xgbclassifier__min_child_weight': expon(0, 1),
+            'xgbclassifier__max_delta_step': expon(0, 1),
+            'xgbclassifier__lambda': expon(0, 1),
+            'xgbclassifier__alpha': expon(0, 1),
+        })
+
+
+class PCAXGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
+    def make_estimator(self, **params):
+        est = make_pipeline(
+            *self.preprocessors,
+            PolynomialFeatures(),
+            StandardScaler(),
+            PCA(),
+            XGBClassifier()
+        )
+        return est.set_params(**params)
+    
+    def get_param_distributions(self, X, y):
+        return super().get_param_distributions({
+            'polynomialfeatures__degree': [1, 2],
+            'pca__n_components': list(range(1, X.shape[1])),
+            'xgbclassifier__gamma': expon(0, 1),
+            'xgbclassifier__max_depth': geom(1./6),
+            'xgbclassifier__min_child_weight': expon(0, 1),
+            'xgbclassifier__max_delta_step': expon(0, 1),
+            'xgbclassifier__lambda': expon(0, 1),
+            'xgbclassifier__alpha': expon(0, 1),
         })
 
 

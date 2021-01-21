@@ -1,20 +1,13 @@
-from .cv_estimators import (
-    PCARandomForestRegressorCV, PCALassoLarsCV, PCARidgeCV, PCAElasticNetCV,
-    PCAKernelRidgeCV, PCASVRCV, PCAKNeighborsRegressorCV, 
-    PCAAdaBoostRegressorCV, PCAXGBRegressorCV,
-    RandomForestRegressorCV, LassoLarsCV, RidgeCV, ElasticNetCV,
-    KernelRidgeCV, SVRCV, KNeighborsRegressorCV, AdaBoostRegressorCV,
-    XGBRegressorCV
-)
-from .ensemble import RFEVotingRegressorCV, StepwiseVotingRegressorCV
+from .cv_estimators import *
+from .ensemble import RFEVotingClassifierCV, RFEVotingRegressorCV, StepwiseVotingClassifierCV, StepwiseVotingRegressorCV
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.ensemble import VotingRegressor
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, is_classifier
+from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_pipeline
 
-def make_default_cv_regressors():
+def make_cv_regressors():
     return [
         RandomForestRegressorCV(),
         PCARandomForestRegressorCV(),
@@ -36,7 +29,28 @@ def make_default_cv_regressors():
         PCAXGBRegressorCV()
     ]
 
-class AutoRegressor(BaseEstimator, RegressorMixin):
+
+def make_cv_classifiers():
+    return [
+        RandomForestClassifierCV(),
+        PCARandomForestClassifierCV(),
+        LogisticLassoCV(),
+        PCALogisticLassoCV(),
+        LogisticRidgeCV(),
+        PCALogisticRidgeCV(),
+        LogisticElasticNetCV(),
+        PCALogisticElasticNetCV(),
+        SVCCV(),
+        PCASVCCV(),
+        KNeighborsClassifierCV(),
+        PCAKNeighborsClassifierCV(),
+        AdaBoostClassifierCV(),
+        PCAAdaBoostClassifierCV(),
+        XGBClassifierCV(),
+        PCAXGBClassifierCV()
+    ]
+
+class _AutoEstimator(BaseEstimator):
     """
     Parameters
     ----------
@@ -66,9 +80,15 @@ class AutoRegressor(BaseEstimator, RegressorMixin):
     cv : cv split, default=None
     """
     def __init__(
-            self, cv_estimators=[], preprocessors=[], ensemble_method='rfe', max_ensemble_size=100, n_ensembles=1, n_iter=10, n_jobs=None, verbose=False, cv=None
+            self, cv_estimators=[], preprocessors=[], ensemble_method='rfe', max_ensemble_size=100, n_ensembles=1, n_iter=10, n_jobs=None, verbose=False, cv=None, scoring=None
         ):
-        self.cv_estimators = cv_estimators or make_default_cv_regressors()
+        if cv_estimators:
+            self.cv_estimators = cv_estimators
+        else:
+            self.cv_estimators = (
+                make_cv_classifiers() if is_classifier(self)
+                else make_cv_regressors()
+            )
         self.preprocessors = (
             preprocessors if isinstance(preprocessors, list) 
             else [preprocessors]
@@ -81,13 +101,16 @@ class AutoRegressor(BaseEstimator, RegressorMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
         self.cv = cv
+        self.scoring = scoring
         
     def fit(self, X, y, sample_weight=None):
         def fit_cv_estimator(i, est):
             print('\nTuning estimator {} of {}: {}'.format(
                 i+1, len(self.cv_estimators), est.__class__.__name__
             ))
-            est.fit(X, y, n_iter=self.n_iter, n_jobs=self.n_jobs)
+            est.fit(
+                X, y, n_iter=self.n_iter, n_jobs=self.n_jobs, scoring=scoring
+            )
             print('Best estimator score: {:.4f}'.format(est.best_score_))
 
         def make_best_estimators():
@@ -116,19 +139,24 @@ class AutoRegressor(BaseEstimator, RegressorMixin):
                 '\nBuilding ensemble {} of {}'.format(i+1, self.n_ensembles)
             )
             if self.ensemble_method == 'rfe':
-                reg = RFEVotingRegressorCV(
-                    best_estimators, n_jobs=self.n_jobs, cv=self.cv
-                )
+                if is_classifier(self):
+                    ensemble_cls = RFEVotingClassifierCV
+                else:
+                    ensemble_cls = RFEVotingRegressorCV
             elif self.ensemble_method == 'stepwise':
-                reg = StepwiseVotingRegressorCV(
-                    best_estimators, n_jobs=self.n_jobs, cv=self.cv
-                )
-            reg.fit(X, y, sample_weight=sample_weight)
-            print('Best ensemble score: {:.4f}'.format(reg.best_score_))
-            return 'ensemble {}'.format(i+1), reg.best_estimator_
+                if is_classifier(self):
+                    ensemble_cls = StepwiseVotingClassifierCV
+                else:
+                    ensemble_cls = StepwiseVotingRegressorCV
+            ensemble = ensemble_cls(
+                best_estimators, n_jobs=self.n_jobs, cv=self.cv, scoring=scoring
+            ).fit(X, y, sample_weight=sample_weight)
+            print('Best ensemble score: {:.4f}'.format(ensemble.best_score_))
+            return 'ensemble {}'.format(i+1), ensemble.best_estimator_
                 
         for preprocessor in self.preprocessors:
             X = preprocessor.fit_transform(X)
+        scoring = check_scoring(self.scoring, classifier=is_classifier(self))
         [fit_cv_estimator(i, est) for i, est in enumerate(self.cv_estimators)]
         best_estimators = make_best_estimators()
         ensembles = [
@@ -136,10 +164,12 @@ class AutoRegressor(BaseEstimator, RegressorMixin):
         ]
         # if only one ensemble is built, there's no need to create a meta-ensemble
         # if multiple ensembles are built, give them an equal vote in a voting regressor
-        meta_ensemble = (
-            ensembles[0][-1] if len(ensembles) == 1
-            else VotingRegressor(ensembles)
-        )
+        if len(ensembles) == 1:
+            meta_ensemble = ensembles[0][-1]
+        elif is_classifier(self):
+            meta_ensemble = VotingClassifier(ensembles, voting='soft')
+        else:
+            meta_ensemble = VotingRegressor(ensembles)
         self.best_estimator_ = make_pipeline(
             *self.preprocessors, meta_ensemble
         )
@@ -147,3 +177,14 @@ class AutoRegressor(BaseEstimator, RegressorMixin):
     
     def predict(self, X):
         return self.best_estimator_.predict(X)
+    
+    def predict_proba(self, X):
+        return self.best_estimator_.predict_proba(X)
+    
+    
+class AutoRegressor(RegressorMixin, _AutoEstimator):
+    pass
+
+
+class AutoClassifier(ClassifierMixin, _AutoEstimator):
+    pass

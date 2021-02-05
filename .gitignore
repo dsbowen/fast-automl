@@ -1,7 +1,5 @@
 __pycache__/
 .ipynb_checkpoints/
 data/
-src/__pycache__/
-src/.ipynb_checkpoints/
-src/dask-worker-space/
+dist/
 venv/

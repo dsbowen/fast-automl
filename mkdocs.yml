@@ -1,0 +1,20 @@
+site_name: Fast-AutoML
+docs_dir: docs_md
+site_dir: docs
+repo_url: https://github.com/dsbowen/fast-automl
+edit_uri: edit/master/docs_md
+nav:
+  - Home: index.md
+  - API:
+    - Auto ML: api/automl.md
+    - Baseline estimators: api/baseline.md
+    - CV estimators: api/cv_estimators.md
+    - Linear models: api/linear_model.md
+    - Metrics: api/metrics.md
+    - Model comparison: api/test.md
+    - Utilities: api/utils.md
+  - Contribute: contribute.md
+  # - Change log: changelog.md
+theme: readthedocs
+extra_css:
+  - css/extra.css

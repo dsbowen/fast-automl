@@ -1,3 +1,28 @@
+"""# Cross-validation estimators
+
+Examples
+--------
+```python
+from fast_automl.cv_estimators import RandomForestClassifierCV
+
+from sklearn.datasets import load_digits
+from sklearn.model_selection import cross_val_score, train_test_split
+
+X, y = load_digits(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, shuffle=True)
+clf = RandomForestClassifierCV().fit(X_train, y_train, n_jobs=-1)
+print('Cross val score: {:.4f}'.format(cross_val_score(clf.best_estimator_, X_train, y_train).mean()))
+print('Test score: {:.4f}'.format(clf.score(X_test, y_test)))
+```
+
+Out:
+
+```
+Cross val score: 0.9696
+Test score: 0.9800
+```
+"""
+
 from .metrics import check_scoring
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, is_classifier
@@ -18,16 +43,29 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 
-class _CVBaseEstimator(BaseEstimator):
+class CVBaseEstimator(BaseEstimator):
     """
+    Base class for all CV estimators.
+
     Parameters
     ----------
-    preprocessors : list
+    preprocessors : list, default=[]
         Preprocessing steps.
 
-    param_distributions : dict
+    param_distributions : dict, default={}
         Maps names of parameters to distributions. This overrides 
         parameters returned by the `get_param_distributions` method.
+
+    Attributes
+    ----------
+    best_estimator_ : estimator
+        Estimator which attained the best CV score under randomized search.
+
+    best_score_ : scalar
+        Best CV score attained by any estimator.
+
+    cv_results_ : list
+        List of (mean CV score, parameters) tuples.
     """
     def __init__(self, preprocessors=[], param_distributions={}):
         self.preprocessors = (
@@ -37,6 +75,18 @@ class _CVBaseEstimator(BaseEstimator):
         self.param_distributions = param_distributions
 
     def get_param_distributions(self, param_distributions={}):
+        """
+        Parameters
+        ----------
+        param_distributions : dict, default={}
+            These are overridden by the `param_distributions` parameter passed
+            to the constructor.
+
+        Returns
+        -------
+        param_distributions : dict
+            Parameter distributions used for randomized search.
+        """
         param_distributions.update(self.param_distributions)
         return param_distributions
 
@@ -45,6 +95,29 @@ class _CVBaseEstimator(BaseEstimator):
 
     @ignore_warnings(category=ConvergenceWarning)
     def fit(self, X, y, n_iter=10, n_jobs=None, scoring=None):
+        """
+        Fits a CV estimator.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        n_iter : int, default=10
+            Number of iterations to use in randomized search.
+
+        n_jobs : int or None, default=None
+            Number of background jobs to use in randomized search.
+
+        scoring : str or callable, default=None
+            A str (see model evaluation documentation) or a scorer callable 
+            object / function with signature scorer(estimator, X, y) which 
+            should return only a single value. If `None`, the estimator's 
+            default `score` method is used.
+        """
         scoring = check_scoring(scoring, classifier=is_classifier(self))
         est = RandomizedSearchCV(
             self.make_estimator(),
@@ -61,19 +134,48 @@ class _CVBaseEstimator(BaseEstimator):
         return self
 
     def predict(self, X):
+        """
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        C : array, shape (n_samples, n_targets)
+            Predicted values
+        """
         assert hasattr(self, 'best_estimator_'), (
             'Estimator has not been fitted. Call `fit` before `predict`'
         )
         return self.best_estimator_.predict(X)
 
     def predict_proba(self, X):
+        """
+        Probability estimates.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        T : array-like of shape (n_samples, n_classes)
+            Probability of the sample for each classes on the model, ordered 
+            by `self.classes_`.
+
+        Notes
+        -----
+        Only applicable for classifiers.
+        """
         assert hasattr(self, 'best_estimator_'), (
             'Estimator has not been fitted. Call `fit` before `predict`'
         )
         return self.best_estimator_.predict_proba(X)
 
 
-class RandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):    
+class RandomForestClassifierCV(ClassifierMixin, CVBaseEstimator):    
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -86,7 +188,7 @@ class RandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCARandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):    
+class PCARandomForestClassifierCV(ClassifierMixin, CVBaseEstimator):    
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -104,7 +206,7 @@ class PCARandomForestClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class RandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):    
+class RandomForestRegressorCV(RegressorMixin, CVBaseEstimator):    
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -117,7 +219,7 @@ class RandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class PCARandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):    
+class PCARandomForestRegressorCV(RegressorMixin, CVBaseEstimator):    
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -135,7 +237,7 @@ class PCARandomForestRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class LogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
+class LogisticLassoCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -151,7 +253,7 @@ class LogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCALogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
+class PCALogisticLassoCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -172,7 +274,7 @@ class PCALogisticLassoCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class LassoLarsCV(RegressorMixin, _CVBaseEstimator):
+class LassoLarsCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -185,7 +287,7 @@ class LassoLarsCV(RegressorMixin, _CVBaseEstimator):
         })
     
     
-class PCALassoLarsCV(RegressorMixin, _CVBaseEstimator):
+class PCALassoLarsCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -203,7 +305,7 @@ class PCALassoLarsCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class LogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
+class LogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -218,7 +320,7 @@ class LogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCALogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
+class PCALogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -238,7 +340,7 @@ class PCALogisticRidgeCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class RidgeCV(RegressorMixin, _CVBaseEstimator):
+class RidgeCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -251,7 +353,7 @@ class RidgeCV(RegressorMixin, _CVBaseEstimator):
         })
     
     
-class PCARidgeCV(RegressorMixin, _CVBaseEstimator):
+class PCARidgeCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -269,7 +371,7 @@ class PCARidgeCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class LogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
+class LogisticElasticNetCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -286,7 +388,7 @@ class LogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCALogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
+class PCALogisticElasticNetCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -308,7 +410,7 @@ class PCALogisticElasticNetCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class ElasticNetCV(RegressorMixin, _CVBaseEstimator):
+class ElasticNetCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -322,7 +424,7 @@ class ElasticNetCV(RegressorMixin, _CVBaseEstimator):
         })
     
     
-class PCAElasticNetCV(RegressorMixin, _CVBaseEstimator):
+class PCAElasticNetCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -341,7 +443,7 @@ class PCAElasticNetCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class KernelRidgeCV(RegressorMixin, _CVBaseEstimator):
+class KernelRidgeCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -358,7 +460,7 @@ class KernelRidgeCV(RegressorMixin, _CVBaseEstimator):
         })
     
     
-class PCAKernelRidgeCV(RegressorMixin, _CVBaseEstimator):
+class PCAKernelRidgeCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -380,7 +482,7 @@ class PCAKernelRidgeCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class SVCCV(ClassifierMixin, _CVBaseEstimator):
+class SVCCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         return make_pipeline(
             *self.preprocessors,
@@ -396,7 +498,7 @@ class SVCCV(ClassifierMixin, _CVBaseEstimator):
         })
     
     
-class PCASVCCV(RegressorMixin, _CVBaseEstimator):
+class PCASVCCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -418,7 +520,7 @@ class PCASVCCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class SVRCV(RegressorMixin, _CVBaseEstimator):
+class SVRCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -435,7 +537,7 @@ class SVRCV(RegressorMixin, _CVBaseEstimator):
         })
     
     
-class PCASVRCV(RegressorMixin, _CVBaseEstimator):
+class PCASVRCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -457,7 +559,7 @@ class PCASVRCV(RegressorMixin, _CVBaseEstimator):
         })
 
     
-class KNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class KNeighborsClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -473,7 +575,7 @@ class KNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCAKNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class PCAKNeighborsClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -494,7 +596,7 @@ class PCAKNeighborsClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class KNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
+class KNeighborsRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -510,7 +612,7 @@ class KNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class PCAKNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
+class PCAKNeighborsRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -531,7 +633,7 @@ class PCAKNeighborsRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
     
 
-class AdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class AdaBoostClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -545,7 +647,7 @@ class AdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCAAdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class PCAAdaBoostClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -564,7 +666,7 @@ class PCAAdaBoostClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class AdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
+class AdaBoostRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -578,7 +680,7 @@ class AdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class PCAAdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
+class PCAAdaBoostRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -597,7 +699,7 @@ class PCAAdaBoostRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class XGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class XGBClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -616,7 +718,7 @@ class XGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class PCAXGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
+class PCAXGBClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -640,7 +742,7 @@ class PCAXGBClassifierCV(ClassifierMixin, _CVBaseEstimator):
         })
 
 
-class XGBRegressorCV(RegressorMixin, _CVBaseEstimator):
+class XGBRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,
@@ -659,7 +761,7 @@ class XGBRegressorCV(RegressorMixin, _CVBaseEstimator):
         })
 
 
-class PCAXGBRegressorCV(RegressorMixin, _CVBaseEstimator):
+class PCAXGBRegressorCV(RegressorMixin, CVBaseEstimator):
     def make_estimator(self, **params):
         est = make_pipeline(
             *self.preprocessors,

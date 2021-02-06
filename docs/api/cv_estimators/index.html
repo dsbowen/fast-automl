@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>CV estimators - Fast-AutoML</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../../css/extra.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "CV estimators";
+    var mkdocs_page_input_path = "api\\cv_estimators.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Fast-AutoML</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">API</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../automl/">Auto ML</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../baseline/">Baseline estimators</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">CV estimators</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorscvbaseestimator">fast_automl.cv_estimators.CVBaseEstimator</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods">Methods</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsrandomforestclassifiercv">fast_automl.cv_estimators.RandomForestClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_1">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcarandomforestclassifiercv">fast_automl.cv_estimators.PCARandomForestClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_2">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsrandomforestregressorcv">fast_automl.cv_estimators.RandomForestRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_3">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcarandomforestregressorcv">fast_automl.cv_estimators.PCARandomForestRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_4">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorslogisticlassocv">fast_automl.cv_estimators.LogisticLassoCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_5">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcalogisticlassocv">fast_automl.cv_estimators.PCALogisticLassoCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_6">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorslassolarscv">fast_automl.cv_estimators.LassoLarsCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_7">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcalassolarscv">fast_automl.cv_estimators.PCALassoLarsCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_8">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorslogisticridgecv">fast_automl.cv_estimators.LogisticRidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_9">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcalogisticridgecv">fast_automl.cv_estimators.PCALogisticRidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_10">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsridgecv">fast_automl.cv_estimators.RidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_11">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaridgecv">fast_automl.cv_estimators.PCARidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_12">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorslogisticelasticnetcv">fast_automl.cv_estimators.LogisticElasticNetCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_13">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcalogisticelasticnetcv">fast_automl.cv_estimators.PCALogisticElasticNetCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_14">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorselasticnetcv">fast_automl.cv_estimators.ElasticNetCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_15">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaelasticnetcv">fast_automl.cv_estimators.PCAElasticNetCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_16">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorskernelridgecv">fast_automl.cv_estimators.KernelRidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_17">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcakernelridgecv">fast_automl.cv_estimators.PCAKernelRidgeCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_18">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorssvccv">fast_automl.cv_estimators.SVCCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_19">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcasvccv">fast_automl.cv_estimators.PCASVCCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_20">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorssvrcv">fast_automl.cv_estimators.SVRCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_21">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcasvrcv">fast_automl.cv_estimators.PCASVRCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_22">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorskneighborsclassifiercv">fast_automl.cv_estimators.KNeighborsClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_23">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcakneighborsclassifiercv">fast_automl.cv_estimators.PCAKNeighborsClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_24">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorskneighborsregressorcv">fast_automl.cv_estimators.KNeighborsRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_25">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcakneighborsregressorcv">fast_automl.cv_estimators.PCAKNeighborsRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_26">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsadaboostclassifiercv">fast_automl.cv_estimators.AdaBoostClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_27">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaadaboostclassifiercv">fast_automl.cv_estimators.PCAAdaBoostClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_28">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsadaboostregressorcv">fast_automl.cv_estimators.AdaBoostRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_29">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaadaboostregressorcv">fast_automl.cv_estimators.PCAAdaBoostRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_30">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsxgbclassifiercv">fast_automl.cv_estimators.XGBClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_31">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaxgbclassifiercv">fast_automl.cv_estimators.PCAXGBClassifierCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_32">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorsxgbregressorcv">fast_automl.cv_estimators.XGBRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_33">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlcv_estimatorspcaxgbregressorcv">fast_automl.cv_estimators.PCAXGBRegressorCV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_34">Methods</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../ensemble/">Ensemble</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../linear_model/">Linear models</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../metrics/">Metrics</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../test/">Model comparison</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../utils/">Utilities</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../contribute/">Contribute</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Fast-AutoML</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>API &raquo;</li>
+        
+      
+    
+    <li>CV estimators</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/dsbowen/fast-automl/edit/master/docs_md/api/cv_estimators.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<p><link rel="stylesheet" href="https://assets.readthedocs.org/static/css/readthedocs-doc-embed.css" type="text/css" /></p>
+<style>
+    a.src-href {
+        float: right;
+    }
+    p.attr {
+        margin-top: 0.5em;
+        margin-left: 1em;
+    }
+    p.func-header {
+        background-color: gainsboro;
+        border-radius: 0.1em;
+        padding: 0.5em;
+        padding-left: 1em;
+    }
+    table.field-table {
+        border-radius: 0.1em
+    }
+</style>
+<h1 id="cross-validation-estimators">Cross-validation estimators</h1>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="examples">Examples</h4>
+<pre><code class="language-python">from fast_automl.cv_estimators import RandomForestClassifierCV
+
+from sklearn.datasets import load_digits
+from sklearn.model_selection import cross_val_score, train_test_split
+
+X, y = load_digits(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, shuffle=True)
+clf = RandomForestClassifierCV().fit(X_train, y_train, n_jobs=-1)
+print('Cross val score: {:.4f}'.format(cross_val_score(clf.best_estimator_, X_train, y_train).mean()))
+print('Test score: {:.4f}'.format(clf.score(X_test, y_test)))
+</code></pre>
+<p>Out:</p>
+<pre><code>Cross val score: 0.9696
+Test score: 0.9800
+</code></pre>
+<h2 id="fast_automlcv_estimatorscvbaseestimator">fast_automl.cv_estimators.<strong>CVBaseEstimator</strong></h2>
+<p class="func-header">
+    <i>class</i> fast_automl.cv_estimators.<b>CVBaseEstimator</b>(<i>preprocessors=[], param_distributions={}</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L46">[source]</a>
+</p>
+
+<p>Base class for all CV estimators.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>preprocessors : <i>list, default=[]</i></b>
+<p class="attr">
+    Preprocessing steps.
+</p>
+<b>param_distributions : <i>dict, default={}</i></b>
+<p class="attr">
+    Maps names of parameters to distributions. This overrides parameters returned by the <code>get_param_distributions</code> method.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Attributes:</b></td>
+    <td class="field-body" width="100%"><b>best_estimator_ : <i>estimator</i></b>
+<p class="attr">
+    Estimator which attained the best CV score under randomized search.
+</p>
+<b>best_score_ : <i>scalar</i></b>
+<p class="attr">
+    Best CV score attained by any estimator.
+</p>
+<b>cv_results_ : <i>list</i></b>
+<p class="attr">
+    List of (mean CV score, parameters) tuples.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h4 id="methods">Methods</h4>
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, param_distributions={}</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L77">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>param_distributions : <i>dict, default={}</i></b>
+<p class="attr">
+    These are overridden by the <code>param_distributions</code> parameter passed to the constructor.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>param_distributions : <i>dict</i></b>
+<p class="attr">
+    Parameter distributions used for randomized search.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L93">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>fit</b>(<i>category=ConvergenceWarning) def fit(self, X, y, n_iter=10, n_jobs=None, scoring=None</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L96">[source]</a>
+</p>
+
+<p>Fits a CV estimator.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>X : <i>array-like of shape (n_samples, n_features)</i></b>
+<p class="attr">
+    Training data.
+</p>
+<b>y : <i>array-like of shape (n_samples,)</i></b>
+<p class="attr">
+    Target values.
+</p>
+<b>n_iter : <i>int, default=10</i></b>
+<p class="attr">
+    Number of iterations to use in randomized search.
+</p>
+<b>n_jobs : <i>int or None, default=None</i></b>
+<p class="attr">
+    Number of background jobs to use in randomized search.
+</p>
+<b>scoring : <i>str or callable, default=None</i></b>
+<p class="attr">
+    A str (see model evaluation documentation) or a scorer callable object / function with signature scorer(estimator, X, y) which should return only a single value. If <code>None</code>, the estimator's default <code>score</code> method is used.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>predict</b>(<i>self, X</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L136">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>X : <i>array-like, shape (n_samples, n_features)</i></b>
+<p class="attr">
+    Samples.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>C : <i>array, shape (n_samples, n_targets)</i></b>
+<p class="attr">
+    Predicted values
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>predict_proba</b>(<i>self, X</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L153">[source]</a>
+</p>
+
+<p>Probability estimates.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>X : <i>array-like of shape (n_samples, n_features)</i></b>
+<p class="attr">
+    Samples.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>T : <i>array-like of shape (n_samples, n_classes)</i></b>
+<p class="attr">
+    Probability of the sample for each classes on the model, ordered by <code>self.classes_</code>.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h4 id="notes">Notes</h4>
+<p>Only applicable for classifiers.</p>
+<h2 id="fast_automlcv_estimatorsrandomforestclassifiercv">fast_automl.cv_estimators.<strong>RandomForestClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_1">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L179">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L185">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcarandomforestclassifiercv">fast_automl.cv_estimators.<strong>PCARandomForestClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_2">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L192">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L201">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsrandomforestregressorcv">fast_automl.cv_estimators.<strong>RandomForestRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_3">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L210">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L216">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcarandomforestregressorcv">fast_automl.cv_estimators.<strong>PCARandomForestRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_4">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L223">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L232">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorslogisticlassocv">fast_automl.cv_estimators.<strong>LogisticLassoCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_5">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L241">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L248">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcalogisticlassocv">fast_automl.cv_estimators.<strong>PCALogisticLassoCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_6">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L257">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L267">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorslassolarscv">fast_automl.cv_estimators.<strong>LassoLarsCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_7">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L278">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L284">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcalassolarscv">fast_automl.cv_estimators.<strong>PCALassoLarsCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_8">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L291">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L300">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorslogisticridgecv">fast_automl.cv_estimators.<strong>LogisticRidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_9">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L309">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L316">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcalogisticridgecv">fast_automl.cv_estimators.<strong>PCALogisticRidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_10">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L324">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L334">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsridgecv">fast_automl.cv_estimators.<strong>RidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_11">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L344">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L350">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaridgecv">fast_automl.cv_estimators.<strong>PCARidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_12">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L357">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L366">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorslogisticelasticnetcv">fast_automl.cv_estimators.<strong>LogisticElasticNetCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_13">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L375">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L382">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcalogisticelasticnetcv">fast_automl.cv_estimators.<strong>PCALogisticElasticNetCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_14">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L392">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L402">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorselasticnetcv">fast_automl.cv_estimators.<strong>ElasticNetCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_15">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L414">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L420">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaelasticnetcv">fast_automl.cv_estimators.<strong>PCAElasticNetCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_16">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L428">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L437">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorskernelridgecv">fast_automl.cv_estimators.<strong>KernelRidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_17">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L447">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L455">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcakernelridgecv">fast_automl.cv_estimators.<strong>PCAKernelRidgeCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_18">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L464">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L475">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorssvccv">fast_automl.cv_estimators.<strong>SVCCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_19">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L486">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L493">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcasvccv">fast_automl.cv_estimators.<strong>PCASVCCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_20">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L502">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L513">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorssvrcv">fast_automl.cv_estimators.<strong>SVRCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_21">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L524">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L532">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcasvrcv">fast_automl.cv_estimators.<strong>PCASVRCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_22">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L541">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L552">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorskneighborsclassifiercv">fast_automl.cv_estimators.<strong>KNeighborsClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_23">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L563">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L571">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcakneighborsclassifiercv">fast_automl.cv_estimators.<strong>PCAKNeighborsClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_24">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L579">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L590">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorskneighborsregressorcv">fast_automl.cv_estimators.<strong>KNeighborsRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_25">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L600">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L608">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcakneighborsregressorcv">fast_automl.cv_estimators.<strong>PCAKNeighborsRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_26">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L616">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L627">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsadaboostclassifiercv">fast_automl.cv_estimators.<strong>AdaBoostClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_27">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L637">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L644">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaadaboostclassifiercv">fast_automl.cv_estimators.<strong>PCAAdaBoostClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_28">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L651">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L661">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsadaboostregressorcv">fast_automl.cv_estimators.<strong>AdaBoostRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_29">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L670">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L677">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaadaboostregressorcv">fast_automl.cv_estimators.<strong>PCAAdaBoostRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_30">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L684">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L694">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsxgbclassifiercv">fast_automl.cv_estimators.<strong>XGBClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_31">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L703">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L710">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaxgbclassifiercv">fast_automl.cv_estimators.<strong>PCAXGBClassifierCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_32">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L722">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L732">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorsxgbregressorcv">fast_automl.cv_estimators.<strong>XGBRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_33">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L746">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L753">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlcv_estimatorspcaxgbregressorcv">fast_automl.cv_estimators.<strong>PCAXGBRegressorCV</strong></h2>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods_34">Methods</h4>
+<p class="func-header">
+    <i></i> <b>make_estimator</b>(<i>self, **params</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L765">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>get_param_distributions</b>(<i>self, X, y</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\cv_estimators.py#L775">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../ensemble/" class="btn btn-neutral float-right" title="Ensemble">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../baseline/" class="btn btn-neutral" title="Baseline estimators"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/dsbowen/fast-automl/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../baseline/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../ensemble/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

@@ -1,3 +1,5 @@
+# Fast AutoML
+
 Most autoML packages aim for exceptional performance but need to train for an exceptional amount of time. Fast-autoML aims for reasonable performance in a reasonable amount of time.
 
 Fast-autoML includes additional utilities, such as tools for comparing model performance by repeated cross-validation.

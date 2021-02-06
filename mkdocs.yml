@@ -9,6 +9,7 @@ nav:
     - Auto ML: api/automl.md
     - Baseline estimators: api/baseline.md
     - CV estimators: api/cv_estimators.md
+    - Ensemble: api/ensemble.md
     - Linear models: api/linear_model.md
     - Metrics: api/metrics.md
     - Model comparison: api/test.md

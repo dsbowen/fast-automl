@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Utilities - Fast-AutoML</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../../css/extra.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Utilities";
+    var mkdocs_page_input_path = "api\\utils.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Fast-AutoML</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">API</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../automl/">Auto ML</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../baseline/">Baseline estimators</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../cv_estimators/">CV estimators</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../ensemble/">Ensemble</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../linear_model/">Linear models</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../metrics/">Metrics</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../test/">Model comparison</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Utilities</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlutilstransformermixin">fast_automl.utils.TransformerMixin</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#methods">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlutilscolumnselector">fast_automl.utils.ColumnSelector</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_1">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlutilscolumnremover">fast_automl.utils.ColumnRemover</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#examples_1">Examples</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_2">Methods</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#fast_automlutilsboundregressor">fast_automl.utils.BoundRegressor</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#examples_2">Examples</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#methods_3">Methods</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../contribute/">Contribute</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Fast-AutoML</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>API &raquo;</li>
+        
+      
+    
+    <li>Utilities</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/dsbowen/fast-automl/edit/master/docs_md/api/utils.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<p><link rel="stylesheet" href="https://assets.readthedocs.org/static/css/readthedocs-doc-embed.css" type="text/css" /></p>
+<style>
+    a.src-href {
+        float: right;
+    }
+    p.attr {
+        margin-top: 0.5em;
+        margin-left: 1em;
+    }
+    p.func-header {
+        background-color: gainsboro;
+        border-radius: 0.1em;
+        padding: 0.5em;
+        padding-left: 1em;
+    }
+    table.field-table {
+        border-radius: 0.1em
+    }
+</style>
+<h1 id="utilities">Utilities</h1>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlutilstransformermixin">fast_automl.utils.<strong>TransformerMixin</strong></h2>
+<p>Version of scikit-learn's <a href="https://scikit-learn.org/stable/modules/generated/sklearn.base.TransformerMixin.html"><code>TransformerMixin</code></a> which implements a default inert <code>fit</code> method.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h4 id="methods">Methods</h4>
+<p class="func-header">
+    <i></i> <b>fit</b>(<i>self, X, y=None</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L15">[source]</a>
+</p>
+
+<p>This function doesn't do anything, but is necessary to include the transformer in a <code>Pipeline</code>.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>self : <i></i></b>
+<p class="attr">
+
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>transform</b>(<i>self, X</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L25">[source]</a>
+</p>
+
+<p>Must be implemented by the transformer.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<h2 id="fast_automlutilscolumnselector">fast_automl.utils.<strong>ColumnSelector</strong></h2>
+<p class="func-header">
+    <i>class</i> fast_automl.utils.<b>ColumnSelector</b>(<i>columns</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L32">[source]</a>
+</p>
+
+<p>Selects columns from a dataframe.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>columns : <i>list</i></b>
+<p class="attr">
+    List of columns to select.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h4 id="examples">Examples</h4>
+<pre><code class="language-python">from fast_automl.utils import ColumnSelector
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+
+X = pd.DataFrame({
+    'x0': [-1, -2, 1, 2],
+    'x1': [-1, -1, 1, 1]
+})
+y = np.array([1, 1, 2, 2])
+
+reg = make_pipeline(
+    ColumnSelector(['x1']),
+    LinearRegression()
+).fit(X, y)
+reg.score(X, y)
+</code></pre>
+<h4 id="methods_1">Methods</h4>
+<p class="func-header">
+    <i></i> <b>transform</b>(<i>self, X, y=None</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L67">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>X : <i>array-like of shape (n_samples, n_features)</i></b>
+<p class="attr">
+    Training data.
+</p>
+<b>y : <i>optional, array-like of shape (n_samples, n_targets)</i></b>
+<p class="attr">
+    Target values.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>X or (X, y) : <i>Where X columns have been selected</i></b>
+<p class="attr">
+
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h2 id="fast_automlutilscolumnremover">fast_automl.utils.<strong>ColumnRemover</strong></h2>
+<p class="func-header">
+    <i>class</i> fast_automl.utils.<b>ColumnRemover</b>(<i>columns</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L88">[source]</a>
+</p>
+
+<p>Removes columns from a dataframe.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>columns : <i>list</i></b>
+<p class="attr">
+    List of columns to remove.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h4 id="examples_1">Examples</h4>
+<pre><code class="language-python">from fast_automl.utils import ColumnRemover
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+
+X = pd.DataFrame({
+    'x0': [-1, -2, 1, 2],
+    'x1': [-1, -1, 1, 1]
+})
+y = np.array([1, 1, 2, 2])
+
+reg = make_pipeline(
+    ColumnRemover(['x0']),
+    LinearRegression()
+).fit(X, y)
+reg.score(X, y)
+</code></pre>
+<h4 id="methods_2">Methods</h4>
+<p class="func-header">
+    <i></i> <b>transform</b>(<i>self, X, y=None</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L123">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>X : <i>array-like of shape (n_samples, n_features)</i></b>
+<p class="attr">
+    Training data.
+</p>
+<b>y : <i>optional, array-like of shape (n_samples, n_targets)</i></b>
+<p class="attr">
+    Target values.
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Returns:</b></td>
+    <td class="field-body" width="100%"><b>X or (X, y) : <i>Where X columns have been removed</i></b>
+<p class="attr">
+
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h2 id="fast_automlutilsboundregressor">fast_automl.utils.<strong>BoundRegressor</strong></h2>
+<p class="func-header">
+    <i>class</i> fast_automl.utils.<b>BoundRegressor</b>(<i>estimator</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L144">[source]</a>
+</p>
+
+<p>Constrains the predicted target value to be within the range of targets in
+the training data.</p>
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+        <tr class="field">
+    <th class="field-name"><b>Parameters:</b></td>
+    <td class="field-body" width="100%"><b>estimator : <i>scikit-learn style regressor</i></b>
+<p class="attr">
+
+</p></td>
+</tr>
+<tr class="field">
+    <th class="field-name"><b>Attributes:</b></td>
+    <td class="field-body" width="100%"><b>estimator_ : <i>scikit-learn style regressor</i></b>
+<p class="attr">
+    Fitted regressor.
+</p>
+<b>y_max_ : <i>scalar</i></b>
+<p class="attr">
+    Maximum target value in training data.
+</p>
+<b>y_min_ : <i>scalar</i></b>
+<p class="attr">
+    Minimum target value in training data.
+</p></td>
+</tr>
+    </tbody>
+</table>
+
+<h4 id="examples_2">Examples</h4>
+<pre><code class="language-python">from fast_automl.utils import BoundRegressor
+
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+X_train = np.array([
+    [1, 2],
+    [7, 8]
+])
+X_test = np.array([
+    [3, 4],
+    [5, 1000]
+])
+y_train = np.array([1.5, 7.5])
+y_test = np.array([3.5, 5.5])
+
+reg = LinearRegression().fit(X_train, y_train)
+reg.predict(X_test)
+</code></pre>
+<p>Out:</p>
+<pre><code>array([3.5, 7.5])
+</code></pre>
+<h4 id="methods_3">Methods</h4>
+<p class="func-header">
+    <i></i> <b>fit</b>(<i>self, X, y, sample_weight=None</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L196">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+
+<p class="func-header">
+    <i></i> <b>predict</b>(<i>self, X</i>) <a class="src-href" target="_blank" href="https://github.com/dsbowen/fast-automl/blob/master/fast_automl\utils.py#L201">[source]</a>
+</p>
+
+<table class="docutils field-list field-table" frame="void" rules="none">
+    <col class="field-name" />
+    <col class="field-body" />
+    <tbody valign="top">
+
+    </tbody>
+</table>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../contribute/" class="btn btn-neutral float-right" title="Contribute">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../test/" class="btn btn-neutral" title="Model comparison"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/dsbowen/fast-automl/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../test/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../contribute/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

@@ -141,7 +141,7 @@ class AutoEstimator(BaseEstimator):
         self.cv = cv
         self.scoring = scoring
         
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y, groups=None, sample_weight=None):
         """
         Fit the model.
 
@@ -153,7 +153,11 @@ class AutoEstimator(BaseEstimator):
         y : array-like of shape (n_samples,)
             Target values.
 
-        sample_weight, array-like of shape (n_samples,), default=Noone
+        groups : array-like of shape (n_samples,), default=None
+            Group labels for the samples used while splitting the dataset. 
+            Only used in conjunction with `GroupKFold`.
+
+        sample_weight:  array-like of shape (n_samples,), default=Noone
             Individual weights for each sample.
 
         Returns
@@ -166,7 +170,8 @@ class AutoEstimator(BaseEstimator):
                     i+1, len(self.cv_estimators), est.__class__.__name__
                 ))
             est.fit(
-                X, y, n_iter=self.n_iter, n_jobs=self.n_jobs, scoring=scoring
+                X, y, groups=groups, n_iter=self.n_iter, scoring=scoring, 
+                n_jobs=self.n_jobs, cv=self.cv
             )
             if self.verbose:
                 print('Best estimator score: {:.4f}'.format(est.best_score_))
@@ -214,7 +219,7 @@ class AutoEstimator(BaseEstimator):
             ensembles = [
                 ensemble_cls(
                     best_estimators, n_jobs=self.n_jobs, cv=self.cv, scoring=scoring
-                ).fit(X, y, sample_weight=sample_weight)
+                ).fit(X, y, groups=groups, sample_weight=sample_weight)
                 for ensemble_cls in ensemble_classes
             ]
             ensemble = max(ensembles, key=lambda e: e.best_score_)

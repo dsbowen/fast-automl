@@ -36,11 +36,16 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.svm import SVC, SVR
+from sklearn.utils.class_weight import compute_sample_weight
 from scipy.stats import expon, geom, uniform, poisson, randint
 from xgboost import XGBClassifier, XGBRegressor
 
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
+
+
+def _get_n_pca_components_distribution(X):
+    return list(range(1, min(X.shape)))
 
 
 class CVBaseEstimator(BaseEstimator):
@@ -90,11 +95,32 @@ class CVBaseEstimator(BaseEstimator):
         param_distributions.update(self.param_distributions)
         return param_distributions
 
+    def get_fit_params(self, X, y):
+        """
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Features.
+
+        y : array-like of shape (n_samples, n_targets)
+            Targets
+
+        Returns
+        -------
+        fit_params : dict
+            Dictionary of parameters to pass to the `fit` method of 
+            `RandomziedSearchCV`.
+        """
+        return {}
+
     def make_estimator(self, **params):
         raise NotImplementedError('make_estimator method not implemented')
 
     @ignore_warnings(category=ConvergenceWarning)
-    def fit(self, X, y, n_iter=10, n_jobs=None, scoring=None):
+    def fit(
+            self, X, y, groups=None, n_iter=10, scoring=None, n_jobs=None, 
+            cv=None
+        ):
         """
         Fits a CV estimator.
 
@@ -106,26 +132,34 @@ class CVBaseEstimator(BaseEstimator):
         y : array-like of shape (n_samples,)
             Target values.
 
+        groups : array-like of shape (n_samples,), default=None
+            Group labels for the samples used while splitting the dataset. 
+            Only used in conjunction with `GroupKFold`.
+
         n_iter : int, default=10
             Number of iterations to use in randomized search.
-
-        n_jobs : int or None, default=None
-            Number of background jobs to use in randomized search.
 
         scoring : str or callable, default=None
             A str (see model evaluation documentation) or a scorer callable 
             object / function with signature scorer(estimator, X, y) which 
             should return only a single value. If `None`, the estimator's 
             default `score` method is used.
+
+        n_jobs : int or None, default=None
+            Number of background jobs to use in randomized search.
+
+        cv : int, cross-validation generator, or iterable, default=None
+            Scikit-learn style cv parameter.
         """
         scoring = check_scoring(scoring, classifier=is_classifier(self))
         est = RandomizedSearchCV(
             self.make_estimator(),
             self.get_param_distributions(X, y),
+            cv=cv,
             n_iter=n_iter,
             n_jobs=n_jobs,
             scoring=scoring
-        ).fit(X, y)
+        ).fit(X, y, groups=groups, **self.get_fit_params(X, y))
         self.cv_results_ = list(zip(
             est.cv_results_['mean_test_score'], est.cv_results_['params']
         ))
@@ -187,6 +221,10 @@ class RandomForestClassifierCV(ClassifierMixin, CVBaseEstimator):
             'randomforestclassifier__n_estimators': geom(1./100)
         })
 
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'randomforestclassifier__sample_weight': weight}
+
 
 class PCARandomForestClassifierCV(ClassifierMixin, CVBaseEstimator):    
     def make_estimator(self, **params):
@@ -201,9 +239,13 @@ class PCARandomForestClassifierCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'randomforestclassifier__n_estimators': geom(1./100)
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'randomforestclassifier__sample_weight': weight}
 
 
 class RandomForestRegressorCV(RegressorMixin, CVBaseEstimator):    
@@ -232,7 +274,7 @@ class PCARandomForestRegressorCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'randomforestregressor__n_estimators': geom(1./100)
         })
 
@@ -249,8 +291,12 @@ class LogisticLassoCV(ClassifierMixin, CVBaseEstimator):
         return super().get_param_distributions({
             'logisticregression__C': expon(0, 1),
             'logisticregression__penalty': ['l1'],
-            'logisticregression__solver': ['liblinear']
+            'logisticregression__solver': ['saga']
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
 
 
 class PCALogisticLassoCV(ClassifierMixin, CVBaseEstimator):
@@ -267,11 +313,15 @@ class PCALogisticLassoCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'logisticregression__C': expon(0, 1),
             'logisticregression__penalty': ['l1'],
-            'logisticregression__solver': ['liblinear']
+            'logisticregression__solver': ['saga']
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
 
 
 class LassoLarsCV(RegressorMixin, CVBaseEstimator):
@@ -300,7 +350,7 @@ class PCALassoLarsCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'lassolars__alpha': expon(0, 1)
         })
 
@@ -314,10 +364,16 @@ class LogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
         ).set_params(**params)
     
     def get_param_distributions(self, X, y):
+        solver = 'lbfgs' if X.shape[0] < 1e5 else 'saga'
         return super().get_param_distributions({
             'logisticregression__C': expon(0, 1),
-            'logisticregression__penalty': ['l2']
+            'logisticregression__penalty': ['l2'],
+            'logisticregression__solver': [solver]
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
 
 
 class PCALogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
@@ -332,12 +388,18 @@ class PCALogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
         ).set_params(**params)
     
     def get_param_distributions(self, X, y):
+        solver = 'lbfgs' if X.shape[0] < 1e5 else 'saga'
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'logisticregression__C': expon(0, 1),
-            'logisticregression__penalty': ['l2']
+            'logisticregression__penalty': ['l2'],
+            'logisticregression__solver': ['solver']
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
 
 
 class RidgeCV(RegressorMixin, CVBaseEstimator):
@@ -366,7 +428,7 @@ class PCARidgeCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'ridge__alpha': expon(0, 1)
         })
 
@@ -387,6 +449,10 @@ class LogisticElasticNetCV(ClassifierMixin, CVBaseEstimator):
             'logisticregression__solver': ['saga']
         })
 
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
+
 
 class PCALogisticElasticNetCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
@@ -402,12 +468,16 @@ class PCALogisticElasticNetCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'logisticregression__C': expon(0, 1),
             'logisticregression__penalty': ['elasticnet'],
             'logisticregression__l1_ratio': uniform(0, 1),
             'logisticregression__solver': ['saga']
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'logisticregression__sample_weight': weight}
 
 
 class ElasticNetCV(RegressorMixin, CVBaseEstimator):
@@ -437,7 +507,7 @@ class PCAElasticNetCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'elasticnet__alpha': expon(0, 1),
             'elasticnet__l1_ratio': uniform(0, 1)
         })
@@ -475,7 +545,7 @@ class PCAKernelRidgeCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'kernelridge__alpha': expon(0, 1),
             'kernelridge__degree': geom(.5, loc=1),
             'kernelridge__kernel': ['linear', 'poly', 'rbf', 'laplacian']
@@ -487,7 +557,7 @@ class SVCCV(ClassifierMixin, CVBaseEstimator):
         return make_pipeline(
             *self.preprocessors,
             StandardScaler(),
-            SVC(probability=True)
+            SVC(probability=True, class_weight='balanced')
         ).set_params(**params)
         
     def get_param_distributions(self, X, y):
@@ -496,6 +566,10 @@ class SVCCV(ClassifierMixin, CVBaseEstimator):
             'svc__degree': geom(.3),
             'svc__kernel': ['linear', 'poly', 'rbf'],
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'svc__sample_weight': weight}
     
     
 class PCASVCCV(RegressorMixin, CVBaseEstimator):
@@ -506,18 +580,22 @@ class PCASVCCV(RegressorMixin, CVBaseEstimator):
             StandardScaler(),
             PCA(),
             StandardScaler(),
-            SVC(probability=True)
+            SVC(probability=True, class_weight='balanced')
         )
         return est.set_params(**params)
         
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'svc__C': expon(0, 1),
             'svc__degree': geom(.3),
             'svc__kernel': ['linear', 'poly', 'rbf'],
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'svc__sample_weight': weight}
 
 
 class SVRCV(RegressorMixin, CVBaseEstimator):
@@ -552,7 +630,7 @@ class PCASVRCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'svr__C': expon(0, 1),
             'svr__degree': geom(.3),
             'svr__kernel': ['linear', 'poly', 'rbf'],
@@ -590,7 +668,7 @@ class PCAKNeighborsClassifierCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'kneighborsclassifier__n_neighbors': geom(1/(.05*X.shape[0])),
             'kneighborsclassifier__weights': ['uniform', 'distance']
         })
@@ -627,7 +705,7 @@ class PCAKNeighborsRegressorCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'kneighborsregressor__n_neighbors': geom(1/(.05*X.shape[0])),
             'kneighborsregressor__weights': ['uniform', 'distance']
         })
@@ -646,6 +724,10 @@ class AdaBoostClassifierCV(ClassifierMixin, CVBaseEstimator):
             'adaboostclassifier__n_estimators': geom(1./2**5)
         })
 
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'adaboostclassifier__sample_weight': weight}
+
 
 class PCAAdaBoostClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
@@ -661,9 +743,13 @@ class PCAAdaBoostClassifierCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'adaboostclassifier__n_estimators': geom(1./2**5)
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'adaboostclassifier__sample_weight': weight}
 
 
 class AdaBoostRegressorCV(RegressorMixin, CVBaseEstimator):
@@ -694,7 +780,7 @@ class PCAAdaBoostRegressorCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'adaboostregressor__n_estimators': geom(1./2**5)
         })
 
@@ -717,6 +803,10 @@ class XGBClassifierCV(ClassifierMixin, CVBaseEstimator):
             'xgbclassifier__alpha': expon(0, 1),
         })
 
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'xgbclassifier__sample_weight': weight}
+
 
 class PCAXGBClassifierCV(ClassifierMixin, CVBaseEstimator):
     def make_estimator(self, **params):
@@ -732,7 +822,7 @@ class PCAXGBClassifierCV(ClassifierMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'xgbclassifier__gamma': expon(0, 1),
             'xgbclassifier__max_depth': geom(1./6),
             'xgbclassifier__min_child_weight': expon(0, 1),
@@ -740,6 +830,10 @@ class PCAXGBClassifierCV(ClassifierMixin, CVBaseEstimator):
             'xgbclassifier__lambda': expon(0, 1),
             'xgbclassifier__alpha': expon(0, 1),
         })
+
+    def get_fit_params(self, X, y):
+        weight = compute_sample_weight(class_weight='balanced', y=y)
+        return {'xgbclassifier__sample_weight': weight}
 
 
 class XGBRegressorCV(RegressorMixin, CVBaseEstimator):
@@ -775,7 +869,7 @@ class PCAXGBRegressorCV(RegressorMixin, CVBaseEstimator):
     def get_param_distributions(self, X, y):
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
-            'pca__n_components': list(range(1, X.shape[1])),
+            'pca__n_components' : _get_n_pca_components_distribution(X),
             'xgbregressor__gamma': expon(0, 1),
             'xgbregressor__max_depth': geom(1./6),
             'xgbregressor__min_child_weight': expon(0, 1),

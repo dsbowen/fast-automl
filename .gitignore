@@ -4,3 +4,6 @@ __pycache__/
 data/
 dist/
 venv/
+cms_data.csv
+CMS.ipynb
+dev.ipynb

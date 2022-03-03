@@ -250,16 +250,16 @@ class BaseStackingCV(_BaseStacking):
             cv.shuffle = True
         return cv
     
-    def _cross_val_predict(self, X, y, estimators, cv, sample_weight):
+    def _cross_val_predict(self, estimators, X, y, groups, cv, sample_weight):
         fit_params = (
             {} if sample_weight is None else {'sample_weight': sample_weight}
         )
         method = 'predict_proba' if is_classifier(self) else 'predict'
         predictions = Parallel(n_jobs=self.n_jobs)(
             delayed(cross_val_predict)(
-                clone(est), X, y, 
-                cv=deepcopy(cv), 
-                n_jobs=self.n_jobs, 
+                clone(est), X, y,
+                groups=groups,
+                cv=deepcopy(cv),
                 fit_params=fit_params, 
                 verbose=self.verbose,
                 method=method
@@ -303,7 +303,7 @@ class RFEVotingEstimatorCV(BaseStackingCV):
     names_ : list
         List of estimator names in the best estimator.
     """
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y, groups=None, sample_weight=None):
         """
         Fit the model.
 
@@ -314,6 +314,10 @@ class RFEVotingEstimatorCV(BaseStackingCV):
 
         y : array-like of shape (n_samples,)
             Target values.
+
+        groups : array-like of shape (n_samples,), default=None
+            Group labels for the samples used while splitting the dataset. 
+            Only used in conjunction with `GroupKFold`.
 
         sample_weight, array-like of shape (n_samples,), default=Noone
             Individual weights for each sample.
@@ -334,7 +338,8 @@ class RFEVotingEstimatorCV(BaseStackingCV):
                     score = -np.inf
                 else:
                     score = cross_val_score(
-                        weight_fitter, X_meta, y, cv=cv, scoring=scoring
+                        weight_fitter, X_meta, y, 
+                        groups=groups, cv=cv, scoring=scoring
                     ).mean()
                 # append score, current estimators, weights
                 rfe_scores.append(
@@ -356,7 +361,7 @@ class RFEVotingEstimatorCV(BaseStackingCV):
         cv = self._check_cv(y)
         scoring = check_scoring(self.scoring, classifier=is_classifier(self))
         X_meta = self._cross_val_predict(
-            X, y, all_estimators, cv, sample_weight
+            all_estimators, X, y, groups, cv, sample_weight
         )
         self.best_score_, estimators, self.weights_ = compute_rfe_scores(X_meta)
         self.names_ = [name for name, _ in estimators]
@@ -447,7 +452,7 @@ class StepwiseVotingEstimatorCV(BaseStackingCV):
     names_ : list
         List of estimator names in the best estimator.
     """
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y, groups=None, sample_weight=None):
         """
         Fit the model.
 
@@ -458,6 +463,10 @@ class StepwiseVotingEstimatorCV(BaseStackingCV):
 
         y : array-like of shape (n_samples,)
             Target values.
+
+        groups : array-like of shape (n_samples,), default=None
+            Group labels for the samples used while splitting the dataset. 
+            Only used in conjunction with `GroupKFold`.
 
         sample_weight, array-like of shape (n_samples,), default=Noone
             Individual weights for each sample.
@@ -485,7 +494,9 @@ class StepwiseVotingEstimatorCV(BaseStackingCV):
                 best_score = new_scores[idx]
                 in_estimators.append(out_estimators.pop(idx))
                 if is_classifier(self):
-                    col = X_out[:, :, idx].reshape(X_meta.shape[0], X_meta.shape[1], 1)
+                    col = X_out[:, :, idx].reshape(
+                        X_meta.shape[0], X_meta.shape[1], 1
+                    )
                 else:
                     col = X_out[:, idx].reshape(-1, 1)
                 X_in = (
@@ -512,7 +523,8 @@ class StepwiseVotingEstimatorCV(BaseStackingCV):
             if np.any(weights < 0):
                 return -np.inf
             return cross_val_score(
-                weight_fitter, X, y, cv=cv, scoring=scoring
+                weight_fitter, X, y, 
+                groups=groups, cv=cv, scoring=scoring
             ).mean()
             
         if is_classifier(self):
@@ -527,7 +539,7 @@ class StepwiseVotingEstimatorCV(BaseStackingCV):
         cv = self._check_cv(y)
         scoring = check_scoring(self.scoring, classifier=is_classifier(self))
         X_meta = self._cross_val_predict(
-            X, y, all_estimators, cv, sample_weight
+            all_estimators, X, y, groups, cv, sample_weight
         )
         self.best_score_, estimators, self.weights_ = compute_stepwise_scores()
         self.names_ = [name for name, _ in estimators]

@@ -364,11 +364,10 @@ class LogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
         ).set_params(**params)
     
     def get_param_distributions(self, X, y):
-        solver = 'lbfgs' if X.shape[0] < 1e5 else 'saga'
         return super().get_param_distributions({
             'logisticregression__C': expon(0, 1),
             'logisticregression__penalty': ['l2'],
-            'logisticregression__solver': [solver]
+            'logisticregression__solver': ['lbfgs' if X.shape[0] < 1e5 else 'saga']
         })
 
     def get_fit_params(self, X, y):
@@ -388,13 +387,12 @@ class PCALogisticRidgeCV(ClassifierMixin, CVBaseEstimator):
         ).set_params(**params)
     
     def get_param_distributions(self, X, y):
-        solver = 'lbfgs' if X.shape[0] < 1e5 else 'saga'
         return super().get_param_distributions({
             'polynomialfeatures__degree': [1, 2],
             'pca__n_components' : _get_n_pca_components_distribution(X),
             'logisticregression__C': expon(0, 1),
             'logisticregression__penalty': ['l2'],
-            'logisticregression__solver': ['solver']
+            'logisticregression__solver': ['lbfgs' if X.shape[0] < 1e5 else 'saga']
         })
 
     def get_fit_params(self, X, y):
